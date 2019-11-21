@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.*;
+import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.Enumeration;
 
@@ -24,7 +25,7 @@ public class Main {
         byte[] datosDesencriptar= codisClaus.dencryptData(datosEncriptados, key.getPrivate());
         System.out.println(new String(datosDesencriptar));
 
-        //Ejercicio 2 - keystore
+        //Ejercicio 1.2.1 - keystore
         KeyStore ks = KeyStore.getInstance("PKCS12");
         String ksFile = "/home/dam2a/keystore_andresbravo.key";
         String ksPwd = "andres";
@@ -53,7 +54,7 @@ public class Main {
             System.out.println(ks.getKey("mykey", ksPwd.toCharArray()).getAlgorithm());
         }
 
-        //Ejercicio 2 - clau simetrica
+        //Ejercicio 1.2.2 - clau simetrica
         SecretKey sk = codisClaus.keygenKeyGeneration(128);
         KeyStore.SecretKeyEntry secretKeyEntry = new KeyStore.SecretKeyEntry(sk);
         KeyStore.PasswordProtection protectionParameter = new KeyStore.PasswordProtection(ksPwd.toCharArray());
@@ -70,15 +71,28 @@ public class Main {
             out.close();
         }
 
-        //Ejercicio 3 - certificado .cer
+        //Ejercicio 1.2.3 - certificado .cer
         PublicKey pub = codisClaus.getPublicKey("/home/dam2a/keystore_andresbravo.cer");
         System.out.println(pub);
 
-        // clau asimètrica del keystore i extreure’n la PublicKey
-//        codisClaus.getPublicKeyStore(KeyStore ks, String alias, String pwMyKey);
+        //Ejercicio 1.2.4
+        FileInputStream is = new FileInputStream("/home/dam2a/keystore_andres_bravo.jks");
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keystore.load(is, ksPwd.toCharArray());
 
+        String alias = "mykey";
 
-        //EJercicio 5
+        Key clau = keystore.getKey(alias, ksPwd.toCharArray());
+        if (clau instanceof PrivateKey) {
+            // Get certificate of public key
+            Certificate cert = keystore.getCertificate(alias);
+
+            // Get public key
+            PublicKey publicKey = cert.getPublicKey();
+            System.out.println(publicKey.toString());
+        }
+
+        //EJercicio 1.2.5
         byte[] dataBy = "data".getBytes();
 
         PrivateKey privKey = key.getPrivate();
@@ -88,7 +102,7 @@ public class Main {
         System.out.println(new String(firma));
 
 
-        //Ejercicio 6
+        //Ejercicio 1.2.6
         PublicKey publicKey = key.getPublic();
 
         boolean verificado = CodisClaus.validateSignature(dataBy,firma,publicKey);
